@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:host {
+  all: initial;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #e7e9ee;
+}
+
+.vk-root {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+.vk-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4f54ee 0%, #8b5cf6 100%);
+  box-shadow:
+    0 0 0 1px rgba(139, 92, 246, 0.35),
+    0 8px 30px -8px rgba(79, 84, 238, 0.55);
+  border: 0;
+  cursor: pointer;
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+.vk-button:hover {
+  filter: brightness(1.08);
+}
+
+.vk-button:active {
+  transform: scale(0.985);
+}
+
+.vk-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 14, 0.6);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  z-index: 2147483647;
+  animation: vk-fade 140ms ease-out;
+}
+
+.vk-modal {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(17, 20, 27, 0.92);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  animation: vk-pop 160ms ease-out;
+}
+
+@keyframes vk-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes vk-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
