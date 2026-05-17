@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+    "paths": {
+      "@vacancy-kit/shared": ["../../packages/shared/src"],
+      "@vacancy-kit/shared/*": ["../../packages/shared/src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["src"]
+}
