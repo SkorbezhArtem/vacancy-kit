@@ -4,7 +4,7 @@ import { rabotaParser } from './parsers/rabota'
 import type { SiteParser } from './parsers/types'
 import { ShadowHost } from './ui/ShadowHost'
 import { InjectButton } from './ui/InjectButton'
-import type { Vacancy } from '@/shared/types'
+import type { Vacancy } from '@vacancy-kit/shared'
 
 const MOUNT_ID = 'vacancy-kit-button-mount'
 

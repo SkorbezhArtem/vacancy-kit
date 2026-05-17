@@ -1,4 +1,4 @@
-import type { CoverLetterRequest, CoverLetterResult } from './types'
+import type { CoverLetterRequest, CoverLetterResult } from '@vacancy-kit/shared'
 import { generateMockCoverLetter } from './llm/mock'
 
 const USE_MOCK = true

@@ -1,4 +1,4 @@
-import type { SiteId, Vacancy } from '@/shared/types'
+import type { SiteId, Vacancy } from '@vacancy-kit/shared'
 
 export interface SiteParser {
   site: SiteId

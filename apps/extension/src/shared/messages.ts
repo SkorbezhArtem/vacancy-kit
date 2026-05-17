@@ -1,4 +1,4 @@
-import type { CoverLetterRequest, CoverLetterResult, Vacancy } from './types'
+import type { CoverLetterRequest, CoverLetterResult, Vacancy } from '@vacancy-kit/shared'
 
 export type Message =
   | { type: 'cover-letter:request'; payload: CoverLetterRequest }

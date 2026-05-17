@@ -1,4 +1,4 @@
-import type { CoverLetterRequest, CoverLetterResult } from '../types'
+import type { CoverLetterRequest, CoverLetterResult } from '@vacancy-kit/shared'
 
 const OPENINGS_RU = [
   'Добрый день! Увидел вашу вакансию и сразу захотел откликнуться.',

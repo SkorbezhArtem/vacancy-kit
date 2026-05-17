@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Vacancy, CoverLetterResult } from '@/shared/types'
+import type { Vacancy, CoverLetterResult } from '@vacancy-kit/shared'
 import { sendMessage } from '@/shared/messages'
 
 interface Props {

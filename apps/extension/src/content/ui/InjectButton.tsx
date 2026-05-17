@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Vacancy } from '@/shared/types'
+import type { Vacancy } from '@vacancy-kit/shared'
 import { CoverLetterModal } from './CoverLetterModal'
 
 interface Props {

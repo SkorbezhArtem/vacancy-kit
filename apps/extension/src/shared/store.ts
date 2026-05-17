@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Quota } from './types'
+import type { Quota } from '@vacancy-kit/shared'
 
 interface AppState {
   quota: Quota
