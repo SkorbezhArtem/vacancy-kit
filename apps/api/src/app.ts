@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { secureHeaders } from 'hono/secure-headers'
 import { env } from './env'
+import { generationRoutes } from './routes/generations'
 import { healthRoutes } from './routes/health'
 
 export function createApp() {
@@ -28,6 +29,7 @@ export function createApp() {
   app.notFound((c) => c.json({ error: 'not_found', path: c.req.path }, 404))
 
   app.route('/', healthRoutes)
+  app.route('/', generationRoutes)
 
   return app
 }
