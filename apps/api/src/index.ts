@@ -1,14 +1,11 @@
 import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import { createApp } from './app'
+import { env } from './env'
 
-const app = new Hono()
+const app = createApp()
 
-app.get('/', (c) => c.text('vacancy-kit api'))
-
-const port = Number(process.env.PORT ?? 8000)
-
-serve({ fetch: app.fetch, port }, (info) => {
-  console.info(`vacancy-kit api listening on http://localhost:${info.port}`)
+serve({ fetch: app.fetch, port: env.PORT }, (info) => {
+  console.info(`vacancy-kit api listening on http://localhost:${info.port} (${env.NODE_ENV})`)
 })
 
 export default app
