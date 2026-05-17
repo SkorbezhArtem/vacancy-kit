@@ -1,19 +1,25 @@
 import type { CoverLetterRequest, CoverLetterResult } from '@vacancy-kit/shared'
+import { getAnonId } from './identity'
 import { generateMockCoverLetter } from './llm/mock'
 
-const USE_MOCK = true
+const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {}
 
-const API_BASE = (import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_API_BASE
-  ?? 'http://localhost:8000'
+const USE_MOCK = (env.VITE_USE_MOCK ?? 'false').toLowerCase() === 'true'
+const API_BASE = env.VITE_API_BASE ?? 'http://localhost:8000'
 
 export async function generateCoverLetter(req: CoverLetterRequest): Promise<CoverLetterResult> {
   if (USE_MOCK) {
     return generateMockCoverLetter(req)
   }
 
+  const anonId = await getAnonId()
+
   const response = await fetch(`${API_BASE}/api/v1/generations/cover-letter`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      'x-anon-id': anonId,
+    },
     body: JSON.stringify(req),
   })
 
