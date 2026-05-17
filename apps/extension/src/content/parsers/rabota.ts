@@ -1,4 +1,3 @@
-import type { Vacancy } from '@vacancy-kit/shared'
 import type { SiteParser } from './types'
 
 function text(el: Element | null | undefined): string {
