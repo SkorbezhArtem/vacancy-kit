@@ -12,24 +12,17 @@ WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/api/package.json ./apps/api/
 COPY packages/shared/package.json ./packages/shared/
-RUN pnpm install --frozen-lockfile --filter @vacancy-kit/api... --prod=false
+RUN pnpm install --frozen-lockfile --filter @vacancy-kit/api...
 
-FROM deps AS build
+FROM deps AS runtime
 WORKDIR /repo
 COPY packages/shared ./packages/shared
 COPY apps/api ./apps/api
-RUN pnpm --filter @vacancy-kit/api build
+RUN pnpm --filter @vacancy-kit/api typecheck
 
-FROM base AS runner
-WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8000
-
-COPY --from=build /repo/apps/api/package.json ./package.json
-COPY --from=build /repo/apps/api/dist ./dist
-COPY --from=build /repo/packages/shared ./node_modules/@vacancy-kit/shared
-COPY --from=build /repo/node_modules ./node_modules
-
 EXPOSE 8000
 USER node
-CMD ["node", "dist/index.js"]
+WORKDIR /repo/apps/api
+CMD ["pnpm", "start"]
