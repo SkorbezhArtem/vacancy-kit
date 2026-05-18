@@ -2,25 +2,34 @@ import { useEffect, useRef, useState, type PropsWithChildren } from 'react'
 import { createPortal } from 'react-dom'
 import contentCss from '@/content/styles.css?inline'
 
-const HOST_ID = 'vacancy-kit-root'
+interface Props {
+  /**
+   * Element to attach the shadow host to. Defaults to <body>, in which case
+   * children render at the end of the document (suitable for fixed-position
+   * overlays). Pass a specific element to anchor the shadow inline at that
+   * location in the page.
+   */
+  anchor?: HTMLElement | null
+}
 
 /**
- * Mounts children into a closed shadow root attached to <body>.
- * Host site styles can't leak in; our styles can't leak out.
+ * Mounts children into an open shadow root attached either to <body> or to
+ * the provided anchor element. Host site styles can't leak in; our styles
+ * can't leak out.
  */
-export function ShadowHost({ children }: PropsWithChildren) {
-  const hostRef = useRef<HTMLDivElement | null>(null)
+export function ShadowHost({ children, anchor }: PropsWithChildren<Props>) {
+  const placeholderRef = useRef<HTMLSpanElement | null>(null)
   const [shadowMount, setShadowMount] = useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    let host = document.getElementById(HOST_ID) as HTMLDivElement | null
+    const parent = anchor ?? placeholderRef.current?.parentElement ?? document.body
+
+    let host = parent.querySelector<HTMLDivElement>(':scope > .vk-host')
     if (!host) {
       host = document.createElement('div')
-      host.id = HOST_ID
       host.className = 'vk-host'
-      document.body.appendChild(host)
+      parent.appendChild(host)
     }
-    hostRef.current = host
 
     let shadow = host.shadowRoot
     if (!shadow) {
@@ -38,8 +47,12 @@ export function ShadowHost({ children }: PropsWithChildren) {
     }
 
     setShadowMount(mount)
-  }, [])
+  }, [anchor])
 
-  if (!shadowMount) return null
-  return createPortal(children, shadowMount)
+  return (
+    <>
+      <span ref={placeholderRef} style={{ display: 'none' }} aria-hidden="true" />
+      {shadowMount ? createPortal(children, shadowMount) : null}
+    </>
+  )
 }

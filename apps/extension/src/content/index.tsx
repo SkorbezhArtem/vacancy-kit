@@ -36,7 +36,7 @@ function mount(vacancy: Vacancy, container: HTMLElement) {
     activeRoot = createRoot(node)
   }
   activeRoot.render(
-    <ShadowHost>
+    <ShadowHost anchor={node}>
       <InjectButton vacancy={vacancy} />
     </ShadowHost>
   )
