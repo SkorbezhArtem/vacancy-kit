@@ -1,4 +1,3 @@
-import { Check } from 'lucide-react'
 import type { UserSettings, Tone, Language } from '@vacancy-kit/shared'
 import { cn } from '@/lib/cn'
 
@@ -8,74 +7,46 @@ interface Props {
   savedAt: number | null
 }
 
-const TONES: Array<{ id: Tone; label: string; hint: string }> = [
-  { id: 'neutral', label: 'Нейтрально', hint: 'сухо, по делу' },
-  { id: 'friendly', label: 'Дружелюбно', hint: 'живо, по-человечески' },
-  { id: 'formal', label: 'Формально', hint: 'деловой стиль' },
+const TONES: Array<{ id: Tone; label: string; ru: string }> = [
+  { id: 'neutral', label: 'NEUTRAL', ru: 'нейтрально' },
+  { id: 'friendly', label: 'FRIENDLY', ru: 'дружелюбно' },
+  { id: 'formal', label: 'FORMAL', ru: 'формально' },
 ]
 
 const LANGS: Array<{ id: Language; label: string }> = [
-  { id: 'ru', label: 'Русский' },
-  { id: 'en', label: 'English' },
+  { id: 'ru', label: 'RU' },
+  { id: 'en', label: 'EN' },
 ]
 
 export function SettingsPanel({ settings, onChange, savedAt }: Props) {
   const recentlySaved = savedAt !== null && Date.now() - savedAt < 1800
 
   return (
-    <div className="space-y-6">
-      <Row label="Тон по умолчанию" hint="используется при первой генерации">
-        <div className="grid grid-cols-3 gap-2">
-          {TONES.map((t) => {
-            const active = settings.defaultTone === t.id
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => onChange({ defaultTone: t.id })}
-                className={cn(
-                  'rounded-xl border px-3 py-2.5 text-left transition-colors',
-                  active
-                    ? 'border-brand-400/50 bg-brand-500/15'
-                    : 'border-border bg-white/[0.02] hover:bg-white/[0.04]'
-                )}
-              >
-                <div className={cn('text-sm font-medium', active ? 'text-text' : 'text-text')}>
-                  {t.label}
-                </div>
-                <div className="text-[11px] text-text-dim">{t.hint}</div>
-              </button>
-            )
-          })}
-        </div>
+    <div>
+      <Row
+        label="tone"
+        title="Тон письма"
+        hint="С каким настроением модалка стартует на новой вакансии."
+      >
+        <Segmented
+          options={TONES.map((t) => ({ id: t.id, label: t.label, hint: t.ru }))}
+          value={settings.defaultTone}
+          onChange={(v) => onChange({ defaultTone: v })}
+        />
       </Row>
 
-      <Row label="Язык по умолчанию" hint="на каком языке писать письмо">
-        <div className="flex gap-2">
-          {LANGS.map((l) => {
-            const active = settings.defaultLanguage === l.id
-            return (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => onChange({ defaultLanguage: l.id })}
-                className={cn(
-                  'rounded-full border px-4 py-1.5 text-sm transition-colors',
-                  active
-                    ? 'border-brand-400/50 bg-brand-500/15 text-text'
-                    : 'border-border bg-transparent text-text-muted hover:text-text'
-                )}
-              >
-                {l.label}
-              </button>
-            )
-          })}
-        </div>
+      <Row label="language" title="Язык" hint="На каком языке писать письмо.">
+        <Segmented
+          options={LANGS}
+          value={settings.defaultLanguage}
+          onChange={(v) => onChange({ defaultLanguage: v })}
+        />
       </Row>
 
       <Row
-        label="Не показывать кнопку на закрытых вакансиях"
-        hint="если вакансия в архиве — не вмешиваться в страницу"
+        label="archive"
+        title="Скрывать на закрытых вакансиях"
+        hint="Не вмешиваться в страницу, если объявление в архиве."
       >
         <Toggle
           checked={settings.hideOnClosedVacancies}
@@ -83,13 +54,8 @@ export function SettingsPanel({ settings, onChange, savedAt }: Props) {
         />
       </Row>
 
-      <div className="h-4 text-xs text-text-dim">
-        {recentlySaved ? (
-          <span className="inline-flex items-center gap-1 text-success">
-            <Check className="h-3 w-3" />
-            Сохранено
-          </span>
-        ) : null}
+      <div className="mt-6 h-3 font-mono text-[10px] uppercase tracking-[0.22em] text-text-dim">
+        {recentlySaved ? <span className="text-success">› saved</span> : null}
       </div>
     </div>
   )
@@ -97,20 +63,60 @@ export function SettingsPanel({ settings, onChange, savedAt }: Props) {
 
 function Row({
   label,
+  title,
   hint,
   children,
 }: {
   label: string
+  title: string
   hint?: string
   children: React.ReactNode
 }) {
   return (
-    <div className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_auto] md:items-center md:gap-6">
-      <div>
-        <div className="text-sm font-medium text-text">{label}</div>
-        {hint ? <div className="text-xs text-text-dim">{hint}</div> : null}
+    <div className="grid grid-cols-1 gap-4 border-b border-border/40 py-6 first:pt-2 last:border-b-0 md:grid-cols-[140px_1fr_auto] md:items-center md:gap-8">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-dim">
+        — {label}
+      </div>
+      <div className="min-w-0">
+        <div className="text-[15px] font-medium leading-tight text-text">{title}</div>
+        {hint ? <div className="mt-1 text-xs text-text-muted">{hint}</div> : null}
       </div>
       <div className="md:justify-self-end">{children}</div>
+    </div>
+  )
+}
+
+function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: Array<{ id: T; label: string; hint?: string }>
+  value: T
+  onChange: (v: T) => void
+}) {
+  return (
+    <div className="inline-flex overflow-hidden rounded-md border border-border bg-bg-elevated/40">
+      {options.map((opt, i) => {
+        const active = opt.id === value
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            title={opt.hint}
+            className={cn(
+              'relative h-9 px-4 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors',
+              i > 0 && 'border-l border-border',
+              active
+                ? 'bg-text text-bg'
+                : 'bg-transparent text-text-muted hover:bg-white/[0.03] hover:text-text'
+            )}
+          >
+            {opt.label}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -123,14 +129,14 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={cn(
-        'relative h-6 w-11 rounded-full transition-colors',
-        checked ? 'bg-brand-gradient' : 'bg-white/10'
+        'flex h-7 w-12 items-center rounded-full p-0.5 transition-colors',
+        checked ? 'bg-text' : 'bg-white/[0.08] hover:bg-white/[0.12]'
       )}
     >
       <span
         className={cn(
-          'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
-          checked ? 'translate-x-5' : 'translate-x-0.5'
+          'block h-6 w-6 rounded-full shadow transition-all',
+          checked ? 'translate-x-5 bg-bg' : 'translate-x-0 bg-text-muted'
         )}
       />
     </button>
