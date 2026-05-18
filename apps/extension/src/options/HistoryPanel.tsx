@@ -1,7 +1,5 @@
 import { useState } from 'react'
-import { Copy, Trash2, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react'
 import type { HistoryEntry } from '@vacancy-kit/shared'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/cn'
 
 interface Props {
@@ -10,32 +8,48 @@ interface Props {
   onClearAll: () => void
 }
 
-const TONE_LABEL: Record<HistoryEntry['tone'], string> = {
-  neutral: 'Нейтрально',
-  friendly: 'Дружелюбно',
-  formal: 'Формально',
+const TONE_SHORT: Record<HistoryEntry['tone'], string> = {
+  neutral: 'neutral',
+  friendly: 'friendly',
+  formal: 'formal',
 }
 
 export function HistoryPanel({ items, onDelete, onClearAll }: Props) {
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-white/[0.02] px-4 py-8 text-center text-sm text-text-dim">
-        Тут пока пусто. Сгенерируй первое письмо на странице вакансии — оно появится здесь.
+      <div className="relative border border-dashed border-border/60 px-5 py-10 text-center">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-dim">
+          — empty —
+        </div>
+        <p className="mx-auto mt-3 max-w-sm text-sm text-text-muted">
+          Сгенерируй первое сопроводительное на странице вакансии — оно появится здесь.
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-end">
-        <Button size="sm" variant="ghost" onClick={onClearAll}>
-          Очистить всё
-        </Button>
+    <div>
+      <div className="flex items-center justify-between border-b border-border/40 pb-3">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-dim">
+          {pad(items.length)} / 20 entries
+        </div>
+        <button
+          type="button"
+          onClick={onClearAll}
+          className="font-mono text-[10px] uppercase tracking-[0.22em] text-text-dim transition-colors hover:text-danger"
+        >
+          clear all ×
+        </button>
       </div>
-      <ul className="space-y-2">
-        {items.map((item) => (
+      <ul>
+        {items.map((item, i) => (
           <li key={item.id}>
-            <HistoryItem item={item} onDelete={() => onDelete(item.id)} />
+            <HistoryRow
+              index={i + 1}
+              item={item}
+              onDelete={() => onDelete(item.id)}
+            />
           </li>
         ))}
       </ul>
@@ -43,98 +57,150 @@ export function HistoryPanel({ items, onDelete, onClearAll }: Props) {
   )
 }
 
-function HistoryItem({ item, onDelete }: { item: HistoryEntry; onDelete: () => void }) {
+function HistoryRow({
+  index,
+  item,
+  onDelete,
+}: {
+  index: number
+  item: HistoryEntry
+  onDelete: () => void
+}) {
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  async function onCopy() {
+  async function onCopy(e: React.MouseEvent) {
+    e.stopPropagation()
     try {
       await navigator.clipboard.writeText(item.text)
       setCopied(true)
       setTimeout(() => setCopied(false), 1600)
-    } catch (e) {
-      console.warn('[vacancy-kit] clipboard failed', e)
+    } catch (err) {
+      console.warn('[vacancy-kit] clipboard failed', err)
     }
   }
 
   const date = new Date(item.generatedAt)
   const dateLabel = isNaN(date.getTime())
     ? item.generatedAt
-    : date.toLocaleString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
+    : date
+        .toLocaleString('ru-RU', {
+          day: '2-digit',
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+        .replace(',', '')
 
   return (
     <div
       className={cn(
-        'rounded-xl border border-border bg-white/[0.02] transition-colors',
-        expanded ? 'border-border-strong' : 'hover:border-border-strong'
+        'group border-b border-border/40 transition-colors',
+        expanded ? 'bg-white/[0.015]' : 'hover:bg-white/[0.015]'
       )}
     >
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-start gap-3 px-4 py-3 text-left"
+        className="grid w-full grid-cols-[56px_1fr_auto] items-baseline gap-4 py-4 text-left"
       >
-        <div className="mt-0.5 text-text-dim">
-          {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium text-text">{item.vacancy.title}</div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-text-dim">
-            {item.vacancy.company ? <span className="truncate">{item.vacancy.company}</span> : null}
-            <span>·</span>
-            <span>{dateLabel}</span>
-            <span>·</span>
-            <span>{TONE_LABEL[item.tone]}</span>
-            <span>·</span>
-            <span className="uppercase">{item.language}</span>
-          </div>
-        </div>
+        <span className="font-mono text-[11px] tracking-[0.12em] text-text-dim">
+          {pad(index)}
+          <span className="ml-1.5 text-text-dim/60">{expanded ? '▾' : '›'}</span>
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-[15px] font-medium leading-tight text-text">
+            {item.vacancy.title}
+          </span>
+          <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono text-[10.5px] uppercase tracking-[0.16em] text-text-dim">
+            {item.vacancy.company ? (
+              <span className="truncate normal-case tracking-normal text-text-muted">
+                {item.vacancy.company}
+              </span>
+            ) : null}
+            <span>{TONE_SHORT[item.tone]}</span>
+            <span>{item.language}</span>
+          </span>
+        </span>
+        <span className="font-mono text-[11px] tracking-[0.05em] text-text-dim">{dateLabel}</span>
       </button>
 
       {expanded ? (
-        <div className="border-t border-border px-4 pb-4 pt-3">
-          <pre className="m-0 max-h-72 overflow-y-auto whitespace-pre-wrap font-sans text-[13px] leading-[1.55] text-text">
-            {item.text}
-          </pre>
-          {item.highlights.length > 0 ? (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {item.highlights.map((h, i) => (
-                <span
-                  key={i}
-                  className="rounded-full border border-border bg-white/[0.03] px-2 py-0.5 text-[11px] text-text-muted"
-                >
-                  {h}
-                </span>
-              ))}
+        <div className="grid grid-cols-[56px_1fr] gap-4 pb-5 pl-0 pr-0">
+          <div />
+          <div>
+            <pre className="m-0 max-h-80 overflow-y-auto whitespace-pre-wrap font-sans text-[13.5px] leading-[1.6] text-text">
+              {item.text}
+            </pre>
+            {item.highlights.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[10.5px] uppercase tracking-[0.16em] text-text-dim">
+                {item.highlights.map((h, i) => (
+                  <span key={i}>· {h}</span>
+                ))}
+              </div>
+            ) : null}
+            <div className="mt-4 flex items-center gap-5">
+              <RowAction onClick={onCopy} active={copied}>
+                {copied ? '› copied' : '› copy'}
+              </RowAction>
+              <RowAction asLink href={item.vacancy.url}>
+                › open vacancy
+              </RowAction>
+              <div className="flex-1" />
+              <RowAction onClick={onDelete} variant="danger">
+                × delete
+              </RowAction>
             </div>
-          ) : null}
-          <div className="mt-3 flex items-center gap-2">
-            <Button size="sm" variant="secondary" onClick={onCopy}>
-              <Copy className="h-3.5 w-3.5" />
-              {copied ? 'Скопировано' : 'Скопировать'}
-            </Button>
-            <a
-              href={item.vacancy.url}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex h-8 items-center gap-1.5 rounded-xl border border-border px-3 text-xs text-text-muted hover:text-text"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Вакансия
-            </a>
-            <div className="flex-1" />
-            <Button size="sm" variant="ghost" onClick={onDelete}>
-              <Trash2 className="h-3.5 w-3.5" />
-              Удалить
-            </Button>
           </div>
         </div>
       ) : null}
     </div>
   )
+}
+
+function RowAction({
+  children,
+  onClick,
+  asLink,
+  href,
+  variant,
+  active,
+}: {
+  children: React.ReactNode
+  onClick?: (e: React.MouseEvent) => void
+  asLink?: boolean
+  href?: string
+  variant?: 'danger'
+  active?: boolean
+}) {
+  const cls = cn(
+    'font-mono text-[11px] uppercase tracking-[0.18em] transition-colors',
+    variant === 'danger'
+      ? 'text-text-dim hover:text-danger'
+      : active
+        ? 'text-success'
+        : 'text-text-muted hover:text-text'
+  )
+  if (asLink && href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer noopener"
+        className={cls}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </a>
+    )
+  }
+  return (
+    <button type="button" className={cls} onClick={onClick}>
+      {children}
+    </button>
+  )
+}
+
+function pad(n: number): string {
+  return n < 10 ? `0${n}` : String(n)
 }
