@@ -41,3 +41,29 @@ export const QuotaSchema = z.object({
   limit: z.number().int().positive(),
   resetsAt: z.string().datetime().nullable(),
 })
+
+export const ToneSchema = z.enum(['neutral', 'friendly', 'formal'])
+export const LanguageSchema = z.enum(['ru', 'en'])
+
+export const UserSettingsSchema = z.object({
+  defaultTone: ToneSchema,
+  defaultLanguage: LanguageSchema,
+  hideOnClosedVacancies: z.boolean(),
+})
+
+export const HistoryEntrySchema = z.object({
+  id: z.string().min(1),
+  text: z.string().min(1),
+  highlights: z.array(z.string()),
+  tone: ToneSchema,
+  language: LanguageSchema,
+  model: z.string().min(1),
+  generatedAt: z.string().datetime(),
+  vacancy: z.object({
+    site: SiteIdSchema,
+    id: z.string().min(1),
+    url: z.string().url(),
+    title: z.string().min(1),
+    company: z.string().nullable(),
+  }),
+})
