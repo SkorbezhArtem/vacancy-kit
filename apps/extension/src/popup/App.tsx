@@ -3,19 +3,32 @@ import { FileText, Sparkles, ScanLine, ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { QUOTA_STORAGE_KEY } from '@/shared/quota'
 import { useAppStore } from '@/shared/store'
 
 export function App() {
-  const { quota, refresh } = useAppStore()
+  const { quota, refresh, applyFromStorage } = useAppStore()
 
   useEffect(() => {
-    refresh()
-  }, [refresh])
+    void refresh()
+
+    const onStorage = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      area: string,
+    ) => {
+      if (area === 'local' && changes[QUOTA_STORAGE_KEY]) {
+        void applyFromStorage()
+      }
+    }
+
+    chrome.storage.onChanged.addListener(onStorage)
+    return () => chrome.storage.onChanged.removeListener(onStorage)
+  }, [refresh, applyFromStorage])
 
   const used = quota.used
   const limit = quota.limit
   const remaining = Math.max(0, limit - used)
-  const pct = limit === 0 ? 0 : Math.min(100, Math.round((used / limit) * 100))
+  const pct = limit === 0 ? 0 : Math.min(100, Math.round((remaining / limit) * 100))
 
   return (
     <div className="w-[360px] min-h-[440px] bg-bg p-4 text-text">
@@ -38,7 +51,7 @@ export function App() {
         <CardHeader>
           <CardTitle className="text-gradient">Quota</CardTitle>
           <CardDescription>
-            {remaining} of {limit} free generations left this month
+            {remaining} of {limit} free generations left today
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -59,7 +72,7 @@ export function App() {
       <Card className="mb-3">
         <CardHeader>
           <CardTitle>What it does</CardTitle>
-          <CardDescription>Open a vacancy on hh.ru — the kit shows up next to the apply button.</CardDescription>
+          <CardDescription>Open a vacancy on hh.ru or rabota.by — the kit shows up next to the apply button.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           <Feature icon={<FileText className="h-4 w-4" />} title="Cover letter" desc="Tailored to the vacancy + your resume." />
