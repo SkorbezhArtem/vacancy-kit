@@ -89,8 +89,17 @@ export const rabotaParser: SiteParser = {
   },
 
   findActionsContainer(doc) {
+    // The top "Откликнуться" link lives inside the actions row that also
+    // hosts the favourite/heart button. Mounting our button as a sibling of
+    // that link keeps the flex layout intact, instead of nesting inside the
+    // <a> and visually colliding with the heart icon.
+    const responseLink = doc.querySelector<HTMLElement>(
+      '[data-qa="vacancy-response-link-top"]'
+    )
+    const wrapper = responseLink?.closest<HTMLElement>('[class*="vacancy-actions"]')
+    if (wrapper) return wrapper
+
     return firstMatch(doc, [
-      '[data-qa="vacancy-response-link-top"]',
       '[data-qa="vacancy-actions"]',
       '[class*="vacancy-actions"]',
     ])
