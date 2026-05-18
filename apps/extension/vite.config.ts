@@ -17,6 +17,14 @@ export default defineConfig({
     hmr: {
       port: 5174,
     },
+    // Allow the MV3 service worker (chrome-extension://<id>) to fetch dev
+    // assets in addition to the Vite localhost defaults.
+    cors: {
+      origin: [
+        /^https?:\/\/(?:(?:[^:]+\.)?localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/,
+        /^chrome-extension:\/\//,
+      ],
+    },
   },
   build: {
     rollupOptions: {
