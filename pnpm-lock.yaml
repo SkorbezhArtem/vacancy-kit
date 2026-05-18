@@ -44,9 +44,15 @@ importers:
       ai:
         specifier: ^4.0.27
         version: 4.3.19(react@18.3.1)(zod@3.25.76)
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
       hono:
         specifier: ^4.6.16
         version: 4.12.19
+      tsx:
+        specifier: ^4.19.2
+        version: 4.22.1
       zod:
         specifier: ^3.24.1
         version: 3.25.76
@@ -54,9 +60,6 @@ importers:
       '@types/node':
         specifier: ^22.10.5
         version: 22.19.19
-      tsx:
-        specifier: ^4.19.2
-        version: 4.22.1
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -1104,6 +1107,10 @@ packages:
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
+
+  dotenv@16.6.1:
+    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
 
   electron-to-chromium@1.5.357:
     resolution: {integrity: sha512-NHlTIQDK8fmVwHwuIzmXYEJ1Ewq3D9wDNc0cWXxDGysP6Pb21giwGNkxiTifyKy/4SoPuN5l6GLP1W9Sv7zB2g==}
@@ -2710,6 +2717,8 @@ snapshots:
       dom-serializer: 2.0.0
       domelementtype: 2.3.0
       domhandler: 5.0.3
+
+  dotenv@16.6.1: {}
 
   electron-to-chromium@1.5.357: {}
 

@@ -1,4 +1,11 @@
+import { config } from 'dotenv'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { z } from 'zod'
+
+// Always load apps/api/.env (pnpm dev cwd can vary; tsx --env-file is best-effort only).
+const apiRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+config({ path: resolve(apiRoot, '.env') })
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

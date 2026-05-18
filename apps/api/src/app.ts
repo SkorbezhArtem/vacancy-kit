@@ -5,6 +5,7 @@ import { secureHeaders } from 'hono/secure-headers'
 import { env } from './env'
 import { generationRoutes } from './routes/generations'
 import { healthRoutes } from './routes/health'
+import { quotaRoutes } from './routes/quota'
 
 export function createApp() {
   const app = new Hono()
@@ -17,6 +18,7 @@ export function createApp() {
       origin: env.CORS_ORIGINS === '*' ? '*' : env.CORS_ORIGINS.split(',').map((s) => s.trim()),
       allowMethods: ['GET', 'POST', 'OPTIONS'],
       allowHeaders: ['content-type', 'x-anon-id'],
+      exposeHeaders: ['x-vk-quota-limit', 'x-vk-quota-remaining', 'x-vk-quota-reset'],
       maxAge: 86400,
     }),
   )
@@ -29,6 +31,7 @@ export function createApp() {
   app.notFound((c) => c.json({ error: 'not_found', path: c.req.path }, 404))
 
   app.route('/', healthRoutes)
+  app.route('/', quotaRoutes)
   app.route('/', generationRoutes)
 
   return app
