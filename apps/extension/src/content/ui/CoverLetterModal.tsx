@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import type { Vacancy, CoverLetterResult } from '@vacancy-kit/shared'
+import type { Vacancy, CoverLetterResult, Tone, Language } from '@vacancy-kit/shared'
 import { sendMessage } from '@/shared/messages'
+import { getSettings } from '@/shared/settings'
+import { addToHistory, makeHistoryId } from '@/shared/history'
 
 interface Props {
   vacancy: Vacancy
@@ -14,7 +16,9 @@ export function CoverLetterModal({ vacancy, onClose }: Props) {
   const [result, setResult] = useState<CoverLetterResult | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [tone, setTone] = useState<'neutral' | 'friendly' | 'formal'>('neutral')
+  const [tone, setTone] = useState<Tone>('neutral')
+  const [language, setLanguage] = useState<Language>('ru')
+  const [defaultsLoaded, setDefaultsLoaded] = useState(false)
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -26,6 +30,25 @@ export function CoverLetterModal({ vacancy, onClose }: Props) {
 
   useEffect(() => {
     let cancelled = false
+    getSettings()
+      .then((settings) => {
+        if (cancelled) return
+        setTone(settings.defaultTone)
+        setLanguage(settings.defaultLanguage)
+        setDefaultsLoaded(true)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setDefaultsLoaded(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!defaultsLoaded) return
+    let cancelled = false
     setStatus('loading')
     setErrorMessage(null)
     setResult(null)
@@ -36,7 +59,7 @@ export function CoverLetterModal({ vacancy, onClose }: Props) {
         vacancy,
         resume: null,
         tone,
-        language: 'ru',
+        language,
       },
     })
       .then((response) => {
@@ -47,6 +70,22 @@ export function CoverLetterModal({ vacancy, onClose }: Props) {
         if (typed.type === 'cover-letter:result') {
           setResult(typed.payload)
           setStatus('ready')
+          void addToHistory({
+            id: makeHistoryId(),
+            text: typed.payload.text,
+            highlights: typed.payload.highlights,
+            tone,
+            language,
+            model: typed.payload.model,
+            generatedAt: typed.payload.generatedAt,
+            vacancy: {
+              site: vacancy.site,
+              id: vacancy.id,
+              url: vacancy.url,
+              title: vacancy.title,
+              company: vacancy.company,
+            },
+          }).catch((e) => console.warn('[vacancy-kit] history save failed', e))
         } else {
           setErrorMessage(typed.error)
           setStatus('error')
@@ -61,7 +100,7 @@ export function CoverLetterModal({ vacancy, onClose }: Props) {
     return () => {
       cancelled = true
     }
-  }, [vacancy, tone])
+  }, [vacancy, tone, language, defaultsLoaded])
 
   async function onCopy() {
     if (!result) return
