@@ -3,20 +3,45 @@ import type { HistoryEntry } from '@vacancy-kit/shared'
 const HISTORY_KEY = 'vk.history'
 const MAX_HISTORY = 20
 
-function hasStorage(): boolean {
+function hasChromeStorage(): boolean {
   return typeof chrome !== 'undefined' && !!chrome.storage?.local
 }
 
+function hasLocalStorage(): boolean {
+  return typeof localStorage !== 'undefined'
+}
+
 export async function getHistory(): Promise<HistoryEntry[]> {
-  if (!hasStorage()) return []
-  const result = await chrome.storage.local.get(HISTORY_KEY)
-  const stored = result[HISTORY_KEY] as HistoryEntry[] | undefined
-  return Array.isArray(stored) ? stored : []
+  if (hasChromeStorage()) {
+    const result = await chrome.storage.local.get(HISTORY_KEY)
+    const stored = result[HISTORY_KEY] as HistoryEntry[] | undefined
+    return Array.isArray(stored) ? stored : []
+  }
+  if (hasLocalStorage()) {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY)
+      if (!raw) return []
+      const parsed = JSON.parse(raw) as unknown
+      return Array.isArray(parsed) ? (parsed as HistoryEntry[]) : []
+    } catch {
+      return []
+    }
+  }
+  return []
 }
 
 async function saveHistory(items: HistoryEntry[]): Promise<void> {
-  if (!hasStorage()) return
-  await chrome.storage.local.set({ [HISTORY_KEY]: items })
+  if (hasChromeStorage()) {
+    await chrome.storage.local.set({ [HISTORY_KEY]: items })
+    return
+  }
+  if (hasLocalStorage()) {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(items))
+    } catch {
+      /* noop */
+    }
+  }
 }
 
 export async function addToHistory(entry: HistoryEntry): Promise<HistoryEntry[]> {
