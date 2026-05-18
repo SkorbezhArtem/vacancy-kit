@@ -23,7 +23,13 @@ export class GeminiProvider implements LLMProvider {
         system: input.system,
         prompt: input.user,
         temperature: input.temperature ?? 0.7,
-        maxTokens: input.maxTokens ?? 600,
+        maxTokens: input.maxTokens ?? 1200,
+        providerOptions: {
+          google: {
+            // Gemini 2.5 Flash burns output tokens on "thinking" by default; skip it for cover letters.
+            thinkingConfig: { thinkingBudget: 0 },
+          },
+        },
       })
 
       return {
