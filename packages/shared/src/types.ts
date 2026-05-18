@@ -39,3 +39,29 @@ export interface Quota {
   limit: number
   resetsAt: string | null
 }
+
+export type Tone = 'neutral' | 'friendly' | 'formal'
+export type Language = 'ru' | 'en'
+
+export interface UserSettings {
+  defaultTone: Tone
+  defaultLanguage: Language
+  hideOnClosedVacancies: boolean
+}
+
+export interface HistoryEntry {
+  id: string
+  text: string
+  highlights: string[]
+  tone: Tone
+  language: Language
+  model: string
+  generatedAt: string
+  vacancy: {
+    site: SiteId
+    id: string
+    url: string
+    title: string
+    company: string | null
+  }
+}
