@@ -8,6 +8,15 @@ import { getHistory, deleteFromHistory, clearHistory } from '@/shared/history'
 import { SettingsPanel } from './SettingsPanel'
 import { HistoryPanel } from './HistoryPanel'
 
+function appVersion(): string {
+  if (typeof chrome === 'undefined' || !chrome.runtime?.getManifest) return '0.0.0'
+  try {
+    return chrome.runtime.getManifest().version
+  } catch {
+    return '0.0.0'
+  }
+}
+
 export function Options() {
   const [settings, setLocalSettings] = useState<UserSettings>(DEFAULT_SETTINGS)
   const [history, setLocalHistory] = useState<HistoryEntry[]>([])
@@ -102,7 +111,7 @@ export function Options() {
         </Card>
 
         <footer className="mt-10 text-center text-[11px] text-text-dim">
-          v{chrome.runtime?.getManifest?.()?.version ?? '0.0.0'} · хранится локально в chrome.storage
+          v{appVersion()} · хранится локально в chrome.storage
         </footer>
       </div>
     </div>
