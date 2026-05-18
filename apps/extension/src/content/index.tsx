@@ -7,6 +7,7 @@ import { InjectButton } from './ui/InjectButton'
 import type { Vacancy } from '@vacancy-kit/shared'
 
 const MOUNT_ID = 'vacancy-kit-button-mount'
+const INJECT_DEBOUNCE_MS = 200
 
 function pickParser(host: string): SiteParser | null {
   if (host.endsWith('hh.ru')) return hhParser
@@ -21,33 +22,101 @@ function ensureMount(container: HTMLElement): HTMLElement {
   if (mount) mount.remove()
   mount = document.createElement('span')
   mount.id = MOUNT_ID
-  mount.style.display = 'inline-block'
-  mount.style.marginLeft = '8px'
+  mount.style.display = 'inline-flex'
+  mount.style.alignItems = 'center'
+  mount.style.marginLeft = '12px'
   mount.style.verticalAlign = 'middle'
   container.appendChild(mount)
   return mount
 }
 
 let activeRoot: Root | null = null
+let mountedKey: string | null = null
+let watchedContainer: HTMLElement | null = null
+let containerObserver: MutationObserver | null = null
+let injectTimer: ReturnType<typeof setTimeout> | null = null
+let injectAttempts = 0
+const MAX_INJECT_ATTEMPTS = 40
 
 function mount(vacancy: Vacancy, container: HTMLElement) {
-  const node = ensureMount(container)
-  if (!activeRoot) {
-    activeRoot = createRoot(node)
+  const key = `${vacancy.site}:${vacancy.id}`
+  const existing = document.getElementById(MOUNT_ID)
+
+  if (
+    mountedKey === key &&
+    existing?.isConnected &&
+    existing.parentElement === container
+  ) {
+    watchActionsContainer(container)
+    return
   }
+
+  if (existing) existing.remove()
+  if (activeRoot) {
+    activeRoot.unmount()
+    activeRoot = null
+  }
+
+  injectAttempts = 0
+  mountedKey = key
+
+  const node = ensureMount(container)
+  activeRoot = createRoot(node)
   activeRoot.render(
     <ShadowHost anchor={node}>
       <InjectButton vacancy={vacancy} />
-    </ShadowHost>
+    </ShadowHost>,
   )
+  watchActionsContainer(container)
 }
 
 function unmount() {
+  mountedKey = null
+  watchedContainer = null
+  containerObserver?.disconnect()
+  containerObserver = null
+
   if (activeRoot) {
     activeRoot.unmount()
     activeRoot = null
   }
   document.getElementById(MOUNT_ID)?.remove()
+}
+
+function isOurNode(node: Node): boolean {
+  if (!(node instanceof Element)) return false
+  if (node.id === MOUNT_ID || node.classList.contains('vk-host')) return true
+  return Boolean(node.closest(`#${MOUNT_ID}, .vk-host`))
+}
+
+function mutationsAreOnlyOurs(records: MutationRecord[]): boolean {
+  for (const record of records) {
+    if (record.target instanceof Element && isOurNode(record.target)) {
+      continue
+    }
+    for (const node of record.addedNodes) {
+      if (!isOurNode(node)) return false
+    }
+    for (const node of record.removedNodes) {
+      if (!isOurNode(node)) return false
+    }
+  }
+  return true
+}
+
+function watchActionsContainer(container: HTMLElement) {
+  if (watchedContainer === container) return
+
+  containerObserver?.disconnect()
+  watchedContainer = container
+
+  containerObserver = new MutationObserver((records) => {
+    if (mutationsAreOnlyOurs(records)) return
+    if (!document.getElementById(MOUNT_ID)?.isConnected) {
+      scheduleInject()
+    }
+  })
+  containerObserver.observe(container, { childList: true })
 }
 
 function tryInject(parser: SiteParser) {
@@ -59,34 +128,88 @@ function tryInject(parser: SiteParser) {
 
   const vacancy = parser.parseVacancy(document, url)
   const actions = parser.findActionsContainer(document)
-  if (!vacancy || !actions) return
+  if (!vacancy || !actions) {
+    scheduleInject()
+    return
+  }
 
   mount(vacancy, actions)
 }
 
+function scheduleInject() {
+  if (!activeParser || injectAttempts >= MAX_INJECT_ATTEMPTS) return
+  const url = new URL(window.location.href)
+  if (!activeParser.isVacancyPage(url)) return
+  if (injectTimer) clearTimeout(injectTimer)
+  injectTimer = setTimeout(() => {
+    injectTimer = null
+    injectAttempts += 1
+    tryInject(activeParser!)
+  }, INJECT_DEBOUNCE_MS)
+}
+
+let activeParser: SiteParser | null = null
+
+function onNavigation() {
+  if (!activeParser) return
+
+  const url = new URL(window.location.href)
+  if (!activeParser.isVacancyPage(url)) {
+    unmount()
+    return
+  }
+
+  injectAttempts = 0
+  tryInject(activeParser)
+  scheduleInject()
+}
+
+function hookSpaNavigation() {
+  const notify = () => onNavigation()
+
+  const pushState = history.pushState.bind(history)
+  const replaceState = history.replaceState.bind(history)
+
+  history.pushState = (...args) => {
+    pushState(...args)
+    notify()
+  }
+  history.replaceState = (...args) => {
+    replaceState(...args)
+    notify()
+  }
+
+  window.addEventListener('popstate', notify)
+}
+
+function cleanup() {
+  if (injectTimer) clearTimeout(injectTimer)
+  injectTimer = null
+  injectAttempts = 0
+  containerObserver?.disconnect()
+  containerObserver = null
+  watchedContainer = null
+  unmount()
+  activeParser = null
+}
+
 function start() {
+  const w = window as Window & { __vkCleanup?: () => void }
+  w.__vkCleanup?.()
+  w.__vkCleanup = cleanup
+
   const parser = pickParser(window.location.host)
   if (!parser) return
 
-  let lastUrl = window.location.href
+  activeParser = parser
+  hookSpaNavigation()
 
-  const run = () => tryInject(parser)
-  run()
+  const url = new URL(window.location.href)
+  if (!parser.isVacancyPage(url)) return
 
-  const observer = new MutationObserver(() => {
-    if (window.location.href !== lastUrl) {
-      lastUrl = window.location.href
-      unmount()
-      run()
-      return
-    }
-    if (!document.getElementById(MOUNT_ID)) {
-      run()
-    }
-  })
-  observer.observe(document.body, { childList: true, subtree: true })
-
-  window.addEventListener('popstate', run)
+  injectAttempts = 0
+  tryInject(parser)
+  scheduleInject()
 }
 
 if (document.readyState === 'loading') {
