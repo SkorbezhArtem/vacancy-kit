@@ -44,6 +44,19 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: [
+          'JetBrains Mono',
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Consolas',
+          'monospace',
+        ],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      letterSpacing: {
+        'mono-wide': '0.18em',
+        'mono-tight': '0.08em',
       },
       borderRadius: {
         xl: '14px',

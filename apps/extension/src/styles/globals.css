@@ -17,6 +17,38 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.vk-grid-bg {
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: 0 0;
+}
+
+.vk-label {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #6b7180;
+}
+
+.vk-rule {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.18) 0,
+    rgba(255, 255, 255, 0.06) 30%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.vk-section-num {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: #a4a9b5;
+}
+
 @layer components {
   .glass {
     @apply bg-bg-elevated/80 backdrop-blur-xl border border-border shadow-soft;
