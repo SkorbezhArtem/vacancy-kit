@@ -10,6 +10,10 @@ export default defineManifest({
     default_popup: 'src/popup/index.html',
     default_title: 'vacancy-kit',
   },
+  options_ui: {
+    page: 'src/options/index.html',
+    open_in_tab: true,
+  },
   icons: {
     16: 'icons/icon16.png',
     32: 'icons/icon32.png',
