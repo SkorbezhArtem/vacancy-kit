@@ -103,12 +103,12 @@ export const ResumeAuditResultSchema = z.object({
 })
 
 export const LlmResumeAuditPayloadSchema = z.object({
-  score: z.number().int().min(0).max(100),
+  score: z.coerce.number().int().min(0).max(100),
   grade: z.enum(['weak', 'fair', 'good', 'excellent']),
   summary: z.string().min(1),
   strengths: z.array(z.string()),
   priorities: z.array(z.string()),
-  checks: z.array(ResumeAuditCheckSchema).min(8),
+  checks: z.array(ResumeAuditCheckSchema).min(6),
   normalReport: ResumeAuditNormalReportSchema.optional(),
   atsReport: ResumeAuditAtsReportSchema.optional(),
 })

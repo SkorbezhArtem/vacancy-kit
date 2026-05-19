@@ -50,8 +50,8 @@ ${ATS_REPORT_SCHEMA}
 
 Правила ATS-режима:
 - Фокус: парсинг автоматикой, ключевые слова на английском, стандартные заголовки секций, plain text, без таблиц/колонок/графики.
-- Минимум 14 checks; половина с category "ats".
-- Обязательно заполни atsReport; normalReport не включай.
+- Минимум 10 checks; половина с category "ats".
+- Заполни atsReport; normalReport не включай.
 - Не выдумывай факты.
 - grade: 0-49 weak, 50-69 fair, 70-84 good, 85-100 excellent.`
   }
@@ -66,8 +66,8 @@ ${NORMAL_REPORT_SCHEMA}
 
 Правила обычного режима:
 - Фокус: рекрутер в РФ, читаемость за 6–7 секунд, конкретика, метрики, отсутствие воды.
-- Минимум 16 checks (включая severity "ok" где блок силён).
-- Обязательно заполни normalReport: impact (critical/serious/minor), improvements (3 уровня по 1–3 пункта), detailedReview (минимум 12 критериев: саммари, опыт, навыки, образование, контакты, грамотность, метрики, GitHub и т.д.).
+- Минимум 10 checks (включая severity "ok" где блок силён).
+- Заполни normalReport если успеваешь: impact, improvements (по 1–2 пункта на уровень), detailedReview (6+ критериев). Если не помещается — опусти normalReport, но checks и summary обязательны.
 - improvements: каждый пункт с полями now, problem, fix, why.
 - Не выдумывай факты.
 - grade: 0-49 weak, 50-69 fair, 70-84 good, 85-100 excellent.`
