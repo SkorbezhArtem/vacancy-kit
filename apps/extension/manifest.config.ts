@@ -36,7 +36,7 @@ export default defineManifest({
       run_at: 'document_idle',
     },
   ],
-  permissions: ['storage', 'activeTab'],
+  permissions: ['storage', 'activeTab', 'tabs'],
   host_permissions: [
     'https://*.hh.ru/*',
     'https://*.rabota.by/*',
