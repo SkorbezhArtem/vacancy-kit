@@ -1,4 +1,4 @@
-export type SiteId = 'hh' | 'rabota'
+export type SiteId = 'hh' | 'rabota' | 'upload'
 
 export interface Vacancy {
   site: SiteId

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const SiteIdSchema = z.enum(['hh', 'rabota'])
+export const SiteIdSchema = z.enum(['hh', 'rabota', 'upload'])
 
 export const VacancySchema = z.object({
   site: SiteIdSchema,
