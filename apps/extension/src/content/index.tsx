@@ -4,6 +4,8 @@ import { rabotaParser } from './parsers/rabota'
 import type { SiteParser } from './parsers/types'
 import { ShadowHost } from './ui/ShadowHost'
 import { InjectButton } from './ui/InjectButton'
+import { startResumeInject } from './resume-boot'
+import { onSpaNavigation } from './spa-navigation'
 import type { Vacancy } from '@vacancy-kit/shared'
 
 const MOUNT_ID = 'vacancy-kit-button-mount'
@@ -164,23 +166,8 @@ function onNavigation() {
   scheduleInject()
 }
 
-function hookSpaNavigation() {
-  const notify = () => onNavigation()
-
-  const pushState = history.pushState.bind(history)
-  const replaceState = history.replaceState.bind(history)
-
-  history.pushState = (...args) => {
-    pushState(...args)
-    notify()
-  }
-  history.replaceState = (...args) => {
-    replaceState(...args)
-    notify()
-  }
-
-  window.addEventListener('popstate', notify)
-}
+let offVacancyNavigation: (() => void) | null = null
+let cleanupResumeInject: (() => void) | null = null
 
 function cleanup() {
   if (injectTimer) clearTimeout(injectTimer)
@@ -191,6 +178,10 @@ function cleanup() {
   watchedContainer = null
   unmount()
   activeParser = null
+  cleanupResumeInject?.()
+  cleanupResumeInject = null
+  offVacancyNavigation?.()
+  offVacancyNavigation = null
 }
 
 function start() {
@@ -198,11 +189,13 @@ function start() {
   w.__vkCleanup?.()
   w.__vkCleanup = cleanup
 
+  cleanupResumeInject = startResumeInject()
+
   const parser = pickParser(window.location.host)
   if (!parser) return
 
   activeParser = parser
-  hookSpaNavigation()
+  offVacancyNavigation = onSpaNavigation(onNavigation)
 
   const url = new URL(window.location.href)
   if (!parser.isVacancyPage(url)) return

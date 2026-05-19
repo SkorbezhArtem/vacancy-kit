@@ -44,6 +44,26 @@
   filter: brightness(0.96);
 }
 
+.vk-button-audit {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+}
+
+.vk-button-floating {
+  box-shadow: 0 8px 24px -6px rgba(13, 148, 136, 0.45);
+}
+
+.vk-button-audit-inline {
+  height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.vk-modal-wide {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100vh - 32px);
+}
+
 .vk-overlay {
   position: fixed;
   inset: 0;
@@ -77,4 +97,92 @@
 @keyframes vk-pop {
   from { opacity: 0; transform: translateY(8px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.vk-audit-page {
+  min-height: 100vh;
+  background: #0a0c10;
+  display: flex;
+  flex-direction: column;
+}
+
+.vk-modal-page {
+  width: min(720px, calc(100vw - 32px));
+  max-height: none;
+  min-height: calc(100vh - 48px);
+  margin: 24px auto;
+}
+
+.vk-audit-landing {
+  min-height: 100vh;
+  background: #0a0c10;
+  color: #e7e9ee;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.vk-audit-landing-inner {
+  width: min(480px, 100%);
+}
+
+.vk-audit-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.vk-audit-subtitle {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #a4a9b5;
+  margin: 0 0 24px;
+}
+
+.vk-audit-dropzone {
+  display: block;
+  padding: 40px 24px;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+}
+
+.vk-audit-dropzone--active {
+  border-color: rgba(20, 184, 166, 0.6);
+  background: rgba(20, 184, 166, 0.08);
+}
+
+.vk-audit-file-input {
+  display: none;
+}
+
+.vk-audit-dropzone-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.vk-audit-dropzone-hint {
+  font-size: 13px;
+  color: #a4a9b5;
+}
+
+.vk-audit-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.vk-audit-footnote {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
 }
