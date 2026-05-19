@@ -26,6 +26,9 @@ export default defineConfig({
       ],
     },
   },
+  optimizeDeps: {
+    include: ['pdfmake/build/pdfmake', 'pdfmake/build/vfs_fonts'],
+  },
   build: {
     rollupOptions: {
       input: {
