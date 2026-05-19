@@ -1,8 +1,18 @@
-import type { CoverLetterRequest, CoverLetterResult, Vacancy } from '@vacancy-kit/shared'
+import type {
+  CoverLetterRequest,
+  CoverLetterResult,
+  ResumeAuditRequest,
+  ResumeAuditResult,
+  Vacancy,
+} from '@vacancy-kit/shared'
 
 export type Message =
   | { type: 'cover-letter:request'; payload: CoverLetterRequest }
   | { type: 'cover-letter:result'; payload: CoverLetterResult }
+  | { type: 'cover-letter:error'; error: string }
+  | { type: 'resume-audit:request'; payload: ResumeAuditRequest }
+  | { type: 'resume-audit:result'; payload: ResumeAuditResult }
+  | { type: 'resume-audit:error'; error: string }
   | { type: 'match-score:request'; payload: { vacancy: Vacancy } }
   | { type: 'match-score:result'; payload: { score: number; reasons: string[] } }
   | { type: 'ping' }

@@ -1,28 +1,31 @@
 import { create } from 'zustand'
 import type { Quota } from '@vacancy-kit/shared'
-import { fetchQuota } from './api'
+import { fetchQuotaFromApi } from './api'
 import { DEFAULT_QUOTA, persistQuota, readStoredQuota } from './quota'
 
 interface AppState {
   quota: Quota
+  quotaSyncing: boolean
   initialised: boolean
-  /** Fetch from API (or mock storage) and update state. */
   refresh: () => Promise<void>
-  /** Read chrome.storage only — use from storage.onChanged, no network. */
   applyFromStorage: () => Promise<void>
   consume: (n?: number) => Promise<void>
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
   quota: DEFAULT_QUOTA,
+  quotaSyncing: false,
   initialised: false,
   refresh: async () => {
+    const cached = await readStoredQuota()
+    set({ quota: cached, initialised: true })
+
+    set({ quotaSyncing: true })
     try {
-      const quota = await fetchQuota()
-      set({ quota, initialised: true })
+      const fresh = await fetchQuotaFromApi()
+      set({ quota: fresh, quotaSyncing: false })
     } catch {
-      const quota = await readStoredQuota()
-      set({ quota, initialised: true })
+      set({ quotaSyncing: false })
     }
   },
   applyFromStorage: async () => {
