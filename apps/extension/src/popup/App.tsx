@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { FileText, Sparkles, ScanLine, ExternalLink } from 'lucide-react'
+import { FileText, Sparkles, ScanLine, ExternalLink, Upload } from 'lucide-react'
+import { openResumeAuditPage } from '@/shared/open-audit-page'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -7,7 +8,7 @@ import { QUOTA_STORAGE_KEY } from '@/shared/quota'
 import { useAppStore } from '@/shared/store'
 
 export function App() {
-  const { quota, refresh, applyFromStorage } = useAppStore()
+  const { quota, quotaSyncing, refresh, applyFromStorage } = useAppStore()
 
   useEffect(() => {
     void refresh()
@@ -23,7 +24,8 @@ export function App() {
 
     chrome.storage.onChanged.addListener(onStorage)
     return () => chrome.storage.onChanged.removeListener(onStorage)
-  }, [refresh, applyFromStorage])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per popup open
+  }, [])
 
   const used = quota.used
   const limit = quota.limit
@@ -52,6 +54,7 @@ export function App() {
           <CardTitle className="text-gradient">Quota</CardTitle>
           <CardDescription>
             {remaining} of {limit} free generations left today
+            {quotaSyncing ? ' · updating…' : ''}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -69,6 +72,22 @@ export function App() {
         </CardFooter>
       </Card>
 
+      <Card className="relative mb-3">
+        <CardHeader>
+          <CardTitle>Проверка резюме</CardTitle>
+          <CardDescription>
+            Загрузите PDF или DOCX — обычный отчёт для РФ или ATS для зарубежных вакансий.
+            Результат сохраняется локально.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button size="sm" className="w-full" onClick={() => openResumeAuditPage()}>
+            <Upload className="h-4 w-4 mr-2" />
+            Загрузить и проверить
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card className="mb-3">
         <CardHeader>
           <CardTitle>What it does</CardTitle>
@@ -76,7 +95,7 @@ export function App() {
         </CardHeader>
         <CardContent className="space-y-2">
           <Feature icon={<FileText className="h-4 w-4" />} title="Cover letter" desc="Tailored to the vacancy + your resume." />
-          <Feature icon={<ScanLine className="h-4 w-4" />} title="Resume audit" desc="15+ checks, ATS-friendly report." />
+          <Feature icon={<ScanLine className="h-4 w-4" />} title="Resume audit" desc="On hh/rabota or upload PDF/DOCX — normal & ATS modes, PDF export." />
           <Feature icon={<Sparkles className="h-4 w-4" />} title="Match score" desc="0–100 fit on every vacancy card." />
         </CardContent>
       </Card>
