@@ -5,6 +5,8 @@ export interface GenerationInput {
   temperature?: number
   /** Hard cap on response size. */
   maxTokens?: number
+  /** Ask the provider to return JSON only (resume audit, etc.). */
+  jsonMode?: boolean
 }
 
 export interface GenerationOutput {

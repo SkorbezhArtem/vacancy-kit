@@ -28,6 +28,7 @@ export class GeminiProvider implements LLMProvider {
           google: {
             // Gemini 2.5 Flash burns output tokens on "thinking" by default; skip it for cover letters.
             thinkingConfig: { thinkingBudget: 0 },
+            ...(input.jsonMode ? { responseMimeType: 'application/json' } : {}),
           },
         },
       })

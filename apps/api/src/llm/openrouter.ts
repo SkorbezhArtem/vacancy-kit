@@ -46,6 +46,7 @@ export class OpenRouterProvider implements LLMProvider {
           ],
           temperature: input.temperature ?? 0.7,
           max_tokens: input.maxTokens ?? 600,
+          ...(input.jsonMode ? { response_format: { type: 'json_object' } } : {}),
         }),
       })
     } catch (err) {

@@ -1,7 +1,6 @@
 import { Hono } from 'hono'
 import {
   CoverLetterRequestSchema,
-  LlmResumeAuditPayloadSchema,
   ResumeAuditRequestSchema,
   buildCoverLetterPrompt,
   buildResumeAuditPrompt,
@@ -11,7 +10,7 @@ import {
 import type { CoverLetterResult } from '@vacancy-kit/shared'
 import { rateLimit } from '../middleware/ratelimit'
 import { ProviderError, generate } from '../llm'
-import { extractJsonObject } from '../llm/parse-json'
+import { parseResumeAuditLlmPayload, ResumeAuditParseError } from '../llm/parse-resume-audit'
 
 export const generationRoutes = new Hono()
 
@@ -83,34 +82,51 @@ generationRoutes.post('/api/v1/generations/resume-audit', rateLimit, async (c) =
   const { system, user } = buildResumeAuditPrompt(parsed.data)
 
   try {
-    const output = await generate({ system, user, temperature: 0.35, maxTokens: 3200 })
-    const jsonText = extractJsonObject(output.text)
-    const llmParsed = LlmResumeAuditPayloadSchema.safeParse(JSON.parse(jsonText))
+    let lastParseError: ResumeAuditParseError | null = null
 
-    if (!llmParsed.success) {
-      console.warn('resume-audit llm json invalid:', llmParsed.error.flatten())
-      return c.json(
-        {
-          error: 'provider_error',
-          message: 'Model returned invalid audit JSON. Try again.',
-        },
-        502,
-      )
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const output = await generate({
+        system:
+          attempt === 0
+            ? system
+            : `${system}\n\nКРИТИЧНО: ответ — один валидный JSON-объект. Без markdown, без пояснений до или после.`,
+        user,
+        temperature: 0.3,
+        maxTokens: 8192,
+        jsonMode: true,
+      })
+      try {
+        const llmPayload = parseResumeAuditLlmPayload(output.text)
+        const result = mergeResumeAudit(
+          staticChecks,
+          llmPayload,
+          output.model,
+          parsed.data.mode,
+        )
+        return c.json(result)
+      } catch (err) {
+        if (err instanceof ResumeAuditParseError) {
+          lastParseError = err
+          console.warn(`resume-audit parse attempt ${attempt + 1} failed:`, err.message)
+          continue
+        }
+        throw err
+      }
     }
 
-    const result = mergeResumeAudit(
-      staticChecks,
-      llmParsed.data,
-      output.model,
-      parsed.data.mode,
+    return c.json(
+      {
+        error: 'provider_error',
+        message: lastParseError?.message ?? 'Model returned invalid audit JSON. Try again.',
+      },
+      502,
     )
-    return c.json(result)
   } catch (err) {
-    if (err instanceof SyntaxError) {
+    if (err instanceof ResumeAuditParseError) {
       return c.json(
         {
           error: 'provider_error',
-          message: 'Model returned non-JSON audit. Try again.',
+          message: err.message,
         },
         502,
       )
