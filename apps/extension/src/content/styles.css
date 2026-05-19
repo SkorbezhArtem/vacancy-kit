@@ -89,6 +89,119 @@
   animation: vk-pop 160ms ease-out;
 }
 
+.vk-modal-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.vk-modal-toolbar {
+  flex-shrink: 0;
+  overflow: visible;
+  position: relative;
+  z-index: 2;
+}
+
+.vk-modal-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.vk-audit-mode {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.vk-audit-mode-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #a4a9b5;
+}
+
+.vk-audit-mode-help-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.vk-audit-mode-help {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #a4a9b5;
+  font-size: 11px;
+  cursor: help;
+  line-height: 1;
+  padding: 0;
+}
+
+.vk-audit-mode-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.vk-audit-mode-pill {
+  padding: 6px 14px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #a4a9b5;
+  cursor: pointer;
+}
+
+.vk-audit-mode-pill--active {
+  border-color: rgba(20, 184, 166, 0.55);
+  background: rgba(20, 184, 166, 0.18);
+  color: #99f6e4;
+  font-weight: 600;
+}
+
+.vk-audit-mode-tip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  z-index: 30;
+  width: max(260px, 18vw);
+  max-width: min(300px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f4f4f5;
+  color: #18181b;
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.vk-audit-mode-tip p {
+  margin: 0 0 8px;
+}
+
+.vk-audit-mode-tip p:last-child {
+  margin-bottom: 0;
+}
+
+.vk-audit-error-block {
+  color: #fca5a5;
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  word-break: break-word;
+}
+
 @keyframes vk-fade {
   from { opacity: 0; }
   to { opacity: 1; }
