@@ -21,7 +21,7 @@ import {
   getCachedResumeAudit,
   saveCachedResumeAudit,
 } from '@/shared/resume-audit-cache'
-import { downloadResumeAuditPdf } from '@/shared/resume-audit-pdf'
+import { formatAuditError } from '@/shared/format-audit-error'
 import { AuditModeToggle } from './AuditModeToggle'
 
 interface Props {
@@ -55,6 +55,7 @@ export function ResumeAuditModal({ resume, onClose, variant = 'overlay' }: Props
   const [view, setView] = useState<ViewTab>('summary')
   const [filter, setFilter] = useState<'all' | 'issues'>('issues')
   const [copied, setCopied] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
   const [fromCache, setFromCache] = useState(false)
   const [runId, setRunId] = useState(0)
 
@@ -214,28 +215,20 @@ export function ResumeAuditModal({ resume, onClose, variant = 'overlay' }: Props
           ) : null}
         </header>
 
-        <div
-          style={{
-            padding: '16px 20px',
-            display: 'flex',
-            flexDirection: 'column',
-            flex: 1,
-            minHeight: 0,
-          }}
-        >
-          <AuditModeToggle mode={mode} onChange={setMode} />
-
-          {status === 'loading' ? <LoadingBlock /> : null}
-          {status === 'error' ? <ErrorBlock message={errorMessage} /> : null}
+        <div className="vk-modal-body">
+          <div className="vk-modal-toolbar">
+            <AuditModeToggle mode={mode} onChange={setMode} />
+            {status === 'loading' ? <LoadingBlock /> : null}
+            {status === 'error' ? <ErrorBlock message={errorMessage} /> : null}
+          </div>
 
           {status === 'ready' && result ? (
             <>
               <ScoreRow result={result} issueCount={issueCount} />
               <ViewTabs view={view} setView={setView} hasRichReport={!!hasRichReport} />
               <div
+                className="vk-modal-scroll"
                 style={{
-                  overflowY: 'auto',
-                  flex: 1,
                   minHeight: variant === 'page' ? 320 : 160,
                   maxHeight: variant === 'page' ? undefined : 'min(50vh, 360px)',
                 }}
@@ -271,10 +264,29 @@ export function ResumeAuditModal({ resume, onClose, variant = 'overlay' }: Props
                 <div style={{ flex: 1 }} />
                 <button
                   type="button"
-                  style={ghostBtnStyle}
-                  onClick={() => downloadResumeAuditPdf(resume, result)}
+                  style={{
+                    ...ghostBtnStyle,
+                    opacity: pdfLoading ? 0.6 : 1,
+                    cursor: pdfLoading ? 'wait' : 'pointer',
+                  }}
+                  disabled={pdfLoading}
+                  onClick={() => {
+                    setPdfLoading(true)
+                    void import('@/shared/resume-audit-pdf')
+                      .then((m) => m.downloadResumeAuditPdf(resume, result))
+                      .catch((err: unknown) => {
+                        console.warn('[vacancy-kit] pdf export failed', err)
+                        setErrorMessage(
+                          err instanceof Error
+                            ? err.message
+                            : 'Не удалось сохранить PDF',
+                        )
+                        setStatus('error')
+                      })
+                      .finally(() => setPdfLoading(false))
+                  }}
                 >
-                  PDF
+                  {pdfLoading ? 'PDF…' : 'PDF'}
                 </button>
                 <button
                   type="button"
@@ -687,20 +699,7 @@ function LoadingBlock() {
 }
 
 function ErrorBlock({ message }: { message: string | null }) {
-  return (
-    <div
-      style={{
-        color: '#ef4444',
-        fontSize: 13,
-        padding: 12,
-        border: '1px solid rgba(239,68,68,0.3)',
-        borderRadius: 12,
-        background: 'rgba(239,68,68,0.08)',
-      }}
-    >
-      {message ?? 'Не удалось провести аудит. Попробуйте ещё раз.'}
-    </div>
-  )
+  return <div className="vk-audit-error-block">{formatAuditError(message)}</div>
 }
 
 const headerStyle: CSSProperties = {
